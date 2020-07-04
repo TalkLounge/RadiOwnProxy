@@ -1,10 +1,19 @@
 {
 	"hostname": "0.0.0.0",
 	"port": 34475,
-	"apiKeys": ["AIzaSyB4jeDLQgg49mUPxVRT2nRYJoJzB9FfHEF", "AIzaSyBjtb8gnZxl_43lYvxPjFlUKFU3i2uCzDU"],
+	"apiKeys": ["AIzaSyBTJoOYbFHhhFaoH2KzqvudE-IZdhZOF9k", "AIzaSyACcroPJi-snvjFF-_iSTpoGhQTkXma6FA"],
 	"key": "/etc/letsencrypt/live/talklounge.ddns.net/privkey.pem",
 	"cert": "/etc/letsencrypt/live/talklounge.ddns.net/cert.pem",
 	"ca": "/etc/letsencrypt/live/talklounge.ddns.net/chain.pem",
 	"maxSearchResults": 24,
-	"redisExpire": 3600
+	"redisExpire": 3600,
+	"postgresUser": "postgres",
+	"postgresPassword": "m!]8z9XmL3N0Khot_SR!e|HZbE)0s#Bw{PWWZfxb4]Rp|]AXhl",
+	"postgresHost": "localhost",
+	"postgresPort": 5432,
+	"postgresDatabase": "radiown_proxy",
+	"postgresMaxConnections": 20,
+	"SearchLimitPerDay": 10,
+	"VideoLimitPerDay": 200,
+	"RequestLimitPerDay": 500
 }

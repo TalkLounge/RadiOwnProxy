@@ -6,6 +6,8 @@
 	},
 	"dependencies": {
 		"redis": "*",
-		"pg": "*"
+		"pgtools": "*",
+		"pg": "*",
+		"luxon": "*"
 	}
 }
