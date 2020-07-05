@@ -13,7 +13,20 @@ errorCodes[1] = "Invalid query";
 errorCodes[2] = "Too many requests";
 errorCodes[3] = "Too many search requests";
 errorCodes[4] = "Too many video requests";
-errorCodes[5] = "Internal server error"
+errorCodes[5] = "Internal server error";
+
+function throwError(res, errorCode) {
+	res.end(JSON.stringify({errorCode: errorCode, errorText: errorCodes[errorCode]}));
+}
+
+const LOG = {info: "INFO", error: "Error"}
+
+function log(type, msg, ip) {
+	if (ip) {
+		msg = ip +": "+ msg
+	}
+	console.log(new Date().toLocaleString() +": "+ type +": "+ msg);
+}
 
 const options = {
 	key: fs.readFileSync(CONFIG.key),
@@ -58,19 +71,6 @@ function initTable() {
 	`);
 }
 
-const LOG = {info: "INFO", error: "Error"}
-
-function log(type, msg, ip) {
-	if (ip) {
-		msg = ip +": "+ msg
-	}
-	console.log(new Date().toLocaleString() +": "+ type +": "+ msg);
-}
-
-function throwError(res, errorCode) {
-	res.end(JSON.stringify({errorCode: errorCode, errorText: errorCodes[errorCode]}));
-}
-
 function getNextMidnightOfUSPacificTimeZone() {
 	return new Date().setHours(24, 5, 0, 0) + ((new Date().getTimezoneOffset() + DateTime.local().setZone("America/Los_Angeles").offset) * 60 * 1000 * -1)
 }
@@ -79,6 +79,12 @@ var apiKeyIndex = 0;
 var apiKeyIndexNextReset = getNextMidnightOfUSPacificTimeZone();
 
 function requestApi(res, redisKey, reqUrl) {
+	if (new Date() > apiKeyIndexNextReset) {
+		log(LOG.info, "API Key Reset");
+		apiKeyIndex = 0;
+		apiKeyIndexNextReset = getNextMidnightOfUSPacificTimeZone();
+		initTable();
+	}
 	const requestUrl = reqUrl +"&key="+ CONFIG.apiKeys[apiKeyIndex];
 	const apiUrl = new URL(requestUrl);
 	const apiReq = https.request(apiUrl, (apiRes) => {
@@ -91,12 +97,6 @@ function requestApi(res, redisKey, reqUrl) {
 				if (apiKeyIndex + 1 < CONFIG.apiKeys.length) {
 					log(LOG.info, "API Key Change");
 					apiKeyIndex++;
-					return requestApi(res, redisKey, reqUrl);
-				} else if (new Date() > apiKeyIndexNextReset) {
-					log(LOG.info, "API Key Reset");
-					apiKeyIndex = 0;
-					apiKeyIndexNextReset = getNextMidnightOfUSPacificTimeZone();
-					initTable();
 					return requestApi(res, redisKey, reqUrl);
 				} else {
 					log(LOG.error, "API Key exceed");
@@ -167,7 +167,7 @@ https.createServer(options, function(req, res) {
 	}
 	const query = reqUrl.query;
 	res.writeHead(200, {"Content-Type": "application/json"});
-	if (! query.q || (query.type !== "search" && query.type !== "video")) {
+	if ((query.type !== "search" && query.type !== "video" && query.type !== "policy") || (! query.q && (query.type === "search" || query.type === "video"))) {
 		log(LOG.info, errorCodes[1] + " - "+ reqUrl.path, ip);
 		return throwError(res, 1);
 	}
@@ -180,6 +180,10 @@ https.createServer(options, function(req, res) {
 			searchApi(res, query.q, ip, data.rows[0]);
 		} else if (query.type === "video") {
 			videoApi(res, query.q, ip, data.rows[0]);
+		} else if (query.type === "policy") {
+			log(LOG.info, "Policy", ip);
+			updateRequestCount(ip);
+			res.end(JSON.stringify({policy: CONFIG.policyText}));
 		}
 	});
 }).listen(CONFIG.port, CONFIG.hostname, (err, res) => {

@@ -15,5 +15,6 @@
 	"postgresMaxConnections": 20,
 	"SearchLimitPerDay": 10,
 	"VideoLimitPerDay": 200,
-	"RequestLimitPerDay": 500
+	"RequestLimitPerDay": 500,
+	"policyText": "Your IP address is stored for 24 hours to prevent overuse"
 }
