@@ -159,6 +159,7 @@ function videoApi(res, q, ip, data) {
 https.createServer(options, function(req, res) {
 	const ip = req.connection.remoteAddress || req.socket.remoteAddress;
 	const reqUrl = url.parse(req.url, true);
+	res.setHeader("Access-Control-Allow-Origin", "*");
 	if (reqUrl.pathname !== "/") {
 		log(LOG.info, "Not found - "+ reqUrl.path, ip);
 		res.writeHead(404);
